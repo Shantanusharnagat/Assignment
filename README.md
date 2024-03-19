@@ -29,5 +29,7 @@ The Attendance Management System is a web application designed to facilitate att
 ## Setup Instructions
 
 1. Clone the repository
-2. Navigate to the frontend and server directory
-3. Run npm i and npm start
+2. Create a .env file and use the 'MONGO_URL'
+3. Navigate to the frontend and server directory
+4. Run npm i and npm start
+
