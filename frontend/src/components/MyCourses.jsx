@@ -1,51 +1,104 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
-import { jwtDecode } from 'jwt-decode';
-import axios from 'axios'; // Import Axios
-import CourseCard from './Cards';
-import { Link } from 'react-router-dom';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import './MyCourses.css'; // Import CSS file for styling
+import './Calender.css'; // Import custom CSS file for styling
 
 const MyCourses = () => {
-  const [courses, setCourses] = useState([]); // Initialize with an empty array
-  const [user_id, setUser_id] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState('');
+  const [showPopup, setShowPopup] = useState(false); // State to control the popup visibility
+  const [attendanceMarked, setAttendanceMarked] = useState(false); // State to track if attendance is marked
 
   useEffect(() => {
-    // Fetch user's courses when the component mounts
-    const token = document.cookie.split('; ').find((cookie) => cookie.startsWith('token='));
-
-    if (token) {
-      const decodedToken = jwtDecode(token.split('=')[1]);
-      setUser_id(decodedToken.userId);
-
-      // Make an API request to get the user's courses using Axios
-      axios
-        .get(`http://localhost:5000/api/users/${decodedToken.userId}/courses`)
-        .then((response) => {
-          console.log(response.data);
-          setCourses(response.data); // Update the courses state with the fetched data
-        })
-        .catch((error) => {
-          console.error('Error fetching user courses:', error);
-        });
-    }
+    fetchStudents();
   }, []);
+
+  const fetchStudents = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/attendance/students');
+      if (response.ok) {
+        const data = await response.json();
+        setStudents(data);
+      } else {
+        console.error('Failed to fetch students:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Failed to fetch students:', error.message);
+    }
+  };
+
+  const handleDateChange = newDate => {
+    setDate(newDate);
+  };
+
+  const handleStudentChange = event => {
+    setSelectedStudent(event.target.value);
+  };
+
+  const handleAttendanceMark = async () => {
+    if (!selectedStudent) {
+      setShowPopup(true); // Show the popup if no student is selected
+      return; // Stop further execution
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/attendance/mark-attendance', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: selectedStudent,
+          date: date.toISOString().split('T')[0],
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Attendance marked successfully');
+        setAttendanceMarked(true); // Set state to indicate attendance marked
+      } else {
+        console.error('Failed to mark attendance:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Failed to mark attendance:', error.message);
+    }
+  };
 
   return (
     <div>
       <Navbar />
-      
-      <div className="courses-container">
-        {courses.map((course) => (
-          <Link to={`/mycourses/${course._id}`} key={course._id}>
-            <CourseCard
-              name={course.name}
-              description={course.description}
-              author={course.author}
-              price={course.price}
-              onCourseClick={() => {}}
-            />
-          </Link>
-        ))}
+      <div className="my-courses-container">
+        <h1>Mark Attendance</h1>
+        <div className="attendance-form">
+          <select value={selectedStudent} onChange={handleStudentChange}>
+            <option value="">Select Student</option>
+            {students.map(student => (
+              <option key={student._id} value={student._id}>{student.username}</option>
+            ))}
+          </select>
+          <Calendar
+            onChange={handleDateChange}
+            value={date}
+            className={'attendance-calendar'}
+          />
+          <button className="attendance-button" onClick={handleAttendanceMark}>Mark Attendance</button>
+          {/* Conditional rendering for the popup */}
+          {showPopup && (
+            <div className="popup">
+              <p>Please select a student before marking attendance.</p>
+              <button onClick={() => setShowPopup(false)}>Close</button>
+            </div>
+          )}
+          {/* Conditional rendering for attendance marked confirmation */}
+          {attendanceMarked && (
+            <div className="popup">
+              <p>Attendance marked successfully!</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

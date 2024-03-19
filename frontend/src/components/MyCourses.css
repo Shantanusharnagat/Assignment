@@ -1,0 +1,38 @@
+/* MyCourses.css */
+.my-courses-container {
+    max-width: 800px;
+    margin: 0 auto;
+
+    padding: 20px;
+}
+
+.attendance-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.attendance-calender {
+    color: black;
+}
+
+.attendance-form select {
+    margin-bottom: 10px;
+    padding: 8px;
+    border: 1px solid white;
+    border-radius: 4px;
+    width: 200px;
+}
+
+.attendance-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.attendance-button:hover {
+    background-color: #0056b3;
+}

@@ -1,82 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Adjust this for your backend API
-import CourseCard from './Cards';
-import './Display.css';
-import {loadStripe} from '@stripe/stripe-js';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
+import './Display.css'; // Import CSS file for styling
 
-function Courses() {
-  const [courses, setCourses] = useState([]);
+const Display = () => {
+  const [userName, setUserName] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [attendanceMarked, setAttendanceMarked] = useState(false);
 
+  // Check if the user is logged in based on the presence of a token
+  const token = document.cookie.split('; ').find(cookie => cookie.startsWith('token='));
   useEffect(() => {
-    axios.get('http://localhost:5000/api/courses/courses')
-      .then(response => {
-        console.log(response.data);
-        setCourses(response.data);  
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
+    if (token) {
+      const decodedToken = jwtDecode(token.split('=')[1]);
+      // Extract the user's name and userId from the token
+      setUserName(decodedToken.userName);
+      setUserId(decodedToken.userId);
+    }
+  }, [token]);
+
+  const markAttendance = async () => {
+    try {
+      // Make a POST request to your backend API to mark attendance
+      const response = await fetch(`http://localhost:5000/api/attendance/${userId}/mark-attendance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: new Date() }), // Send today's date
       });
-  }, []);
 
-  const makePayment=async(course)=>{
-    const token = document.cookie.split('; ').find(cookie => cookie.startsWith('token='));
-    
-    if (!token) {
-      alert("Please login to buy courses")
-      window.location.href = '/login';
-      return
-      
+      if (response.ok) {
+        // Attendance marked successfully
+        setAttendanceMarked(true);
+        console.log('Attendance marked successfully');
+      } else {
+        // Handle errors
+        console.error('Failed to mark attendance:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Failed to mark attendance:', error.message);
     }
-    const decodedToken = jwtDecode(token.split('=')[1]);
-    const userId=decodedToken.userId;
-  
-    
-
-    const stripe=await loadStripe("pk_test_51MgCSrSIGmj3KYA8oqOT1Y7TWGqP9hLbgzAGLJGGDeg6PWWZqcDwxKVnR0f5wVqszpG5KCRUVM7cBnPAwCyiyafd00aS8gA7pw")
-
-    const body={
-      products:[course],
-      userId
-    }
-    const headers={
-      "Content-Type":"application/json",
-      Authorization: `Bearer ${token}`
-
-
-    }
-
-    const response=await fetch("http://localhost:5000/api/payment/payment",{
-      method:"POST",
-      headers:headers,
-      body:JSON.stringify(body)
-    })
-
-    const session=await response.json()
-    console.log(session)
-    const result=await stripe.redirectToCheckout({
-      sessionId:session.id
-    })
-
-    if(result.error){
-      console.log(result.error)
-    }
-  }
+  };
 
   return (
-    <div className="courses-container">
-      {courses.map(course => (
-        <CourseCard
-          key={course.id}
-          name={course.name}
-          description={course.description}
-          author={course.author}
-          price={course.price}
-          onCourseClick={()=>makePayment(course)}
-        />
-      ))}
+    <div className="display-container">
+      <h1>Attendance Display</h1>
+      {userName ? (
+        <>
+          <p className="welcome-message">Welcome, <span className="user-name">{userName}</span>!</p>
+          {!attendanceMarked && <button className="mark-attendance-button" onClick={markAttendance}>Mark Today's Attendance</button>}
+          {attendanceMarked && <p className="attendance-marked-message">Attendance marked successfully!</p>}
+        </>
+      ) : (
+        <p className="login-message">Please login to mark attendance.</p>
+      )}
     </div>
   );
-}
+};
 
-export default Courses;
+export default Display;

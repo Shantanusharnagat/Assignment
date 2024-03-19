@@ -3,12 +3,17 @@
   const bcrypt = require('bcrypt');
   const Schema = mongoose.Schema;
 
+  const attendanceSchema = new Schema({
+    date: { type: Date, required: true },
+    present: { type: Boolean, default: false }
+  });
+
   const userSchema = new Schema({
     username: String,
     email: { type: String, unique: true },
     password: String,
     role: { type: String, default: 'user' },
-    coursesBought: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
+    attendanceRecords: [attendanceSchema]
   });
 
   // Hash and salt the user's password before saving it

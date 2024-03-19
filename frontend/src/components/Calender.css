@@ -1,0 +1,52 @@
+/* calendar.css */
+.react-calendar {
+    font-family: Arial, sans-serif;
+    color: #000;
+}
+
+.react-calendar__tile,
+.react-calendar__tile--header {
+    color: #000;
+    /* Set the default color of dates and headers to black */
+}
+
+.react-calendar__tile--active {
+    background-color: #007bff;
+    color: black;
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+    background-color: #0056b3;
+}
+
+.react-calendar__navigation button {
+    color: #000;
+}
+
+.react-calendar__tile--now {
+    background-color: #f0f0f0;
+    color: #000;
+    /* Change color of dates to black */
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+    background-color: #e5e5e5;
+
+}
+
+.react-calendar__tile--now:disabled {
+    background-color: #f0f0f0;
+    color: black;
+}
+
+.react-calendar__tile--hasActive {
+    background-color: #007bff;
+    color: black;
+}
+
+.react-calendar__tile--hasActive:enabled:hover,
+.react-calendar__tile--hasActive:enabled:focus {
+    background-color: #0056b3;
+}
